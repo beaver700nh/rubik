@@ -51,6 +51,9 @@ void rubik_copy(rubik_t *rubik, rubik_t *other) {
   if (rubik->size != other->size) {
     return;
   }
+  if (rubik->cubies == other->cubies) {
+    return;
+  }
 
   memcpy(rubik->cubies, other->cubies, pow(rubik->size, 3) * sizeof (vec3_t));
 }
@@ -60,26 +63,26 @@ vec3_t *rubik_get(rubik_t *rubik, vec3_t position) {
 }
 
 void rubik_draw(rubik_t *rubik, WINDOW *window) {
-  rubik_dump(rubik, window, 160);
+  rubik_dump(rubik, window, 75);
 
   rubik_draw_face_xy0(rubik, window, 5, 5);
 
-  rubik_t rubik_x0z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][1]);
+  rubik_t rubik_x0z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][1], 0);
   rubik_draw_face_xy0(&rubik_x0z, window, 1, 5);
   rubik_free(&rubik_x0z);
 
-  rubik_t rubik_0yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][1]);
+  rubik_t rubik_0yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][1], 0);
   rubik_draw_face_xy0(&rubik_0yz, window, 5, 1);
   rubik_free(&rubik_0yz);
 
-  rubik_t rubik_2yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][0]);
+  rubik_t rubik_2yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][0], 0);
   rubik_draw_face_xy0(&rubik_2yz, window, 5, 9);
   rubik_free(&rubik_2yz);
 
-  rubik_t rubik_x2z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][0]);
+  rubik_t rubik_x2z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][0], 0);
   rubik_draw_face_xy0(&rubik_x2z, window, 9, 5);
 
-  rubik_t rubik_xy2 = rubik_rotated(&rubik_x2z, ROTATORS[CDL_DIR_X][0]);
+  rubik_t rubik_xy2 = rubik_rotated(&rubik_x2z, ROTATORS[CDL_DIR_X][0], 0);
   rubik_draw_face_xy0(&rubik_xy2, window, 13, 5);
   rubik_free(&rubik_xy2);
 
@@ -97,7 +100,7 @@ void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, uns
 
       for (unsigned short a = 0; a < CUBIE_SIZE_X0; ++a) {
         for (unsigned short b = 0; b < CUBIE_SIZE_Y0; ++b) {
-          mvwaddch(window, (row + i) * CUBIE_SIZE_Y1 + b, (col + j) * CUBIE_SIZE_X1 + a, ' ');
+          mvwaddch(window, (row + j) * CUBIE_SIZE_Y1 + b, (col + i) * CUBIE_SIZE_X1 + a, ' ');
         }
       }
 
@@ -137,7 +140,9 @@ void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short position) {
   }
 }
 
-rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator) {
+rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator, unsigned short _dummy) {
+  (void) _dummy;
+
   rubik_t result;
   rubik_init(&result, rubik->size);
 
@@ -157,10 +162,67 @@ rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator) {
   return result;
 }
 
-void rubik_rotate_ip(rubik_t *rubik, rubik_rotator_t rotator) {
-  rubik_t rotated = rubik_rotated(rubik, rotator);
-  rubik_copy(rubik, &rotated);
-  rubik_free(&rotated);
+rubik_t rubik_rotated_slice_x(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice) {
+  rubik_t result;
+  rubik_init(&result, rubik->size);
+  rubik_copy(&result, rubik);
+
+  for (unsigned short j = 0; j < rubik->size; ++j) {
+    for (unsigned short k = 0; k < rubik->size; ++k) {
+      vec3_t before_vec = {.x = slice, .y = j, .z = k};
+      unsigned short before = vec3_to_index(&before_vec, rubik->size);
+      vec3_t after_vec = (*rotator)(before_vec, rubik->size);
+      unsigned short after = vec3_to_index(&after_vec, rubik->size);
+
+      result.cubies[after] = (*rotator)(rubik->cubies[before], 1);
+    }
+  }
+
+  return result;
+}
+
+rubik_t rubik_rotated_slice_y(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice) {
+  rubik_t result;
+  rubik_init(&result, rubik->size);
+  rubik_copy(&result, rubik);
+
+  for (unsigned short i = 0; i < rubik->size; ++i) {
+    for (unsigned short k = 0; k < rubik->size; ++k) {
+      vec3_t before_vec = {.x = i, .y = slice, .z = k};
+      unsigned short before = vec3_to_index(&before_vec, rubik->size);
+      vec3_t after_vec = (*rotator)(before_vec, rubik->size);
+      unsigned short after = vec3_to_index(&after_vec, rubik->size);
+
+      result.cubies[after] = (*rotator)(rubik->cubies[before], 1);
+    }
+  }
+
+  return result;
+}
+
+rubik_t rubik_rotated_slice_z(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice) {
+  rubik_t result;
+  rubik_init(&result, rubik->size);
+  rubik_copy(&result, rubik);
+
+  for (unsigned short i = 0; i < rubik->size; ++i) {
+    for (unsigned short j = 0; j < rubik->size; ++j) {
+      vec3_t before_vec = {.x = i, .y = j, .z = slice};
+      unsigned short before = vec3_to_index(&before_vec, rubik->size);
+      vec3_t after_vec = (*rotator)(before_vec, rubik->size);
+      unsigned short after = vec3_to_index(&after_vec, rubik->size);
+
+      result.cubies[after] = (*rotator)(rubik->cubies[before], 1);
+    }
+  }
+
+  return result;
+}
+
+void rubik_in_place(rubik_t *rubik, rubik_t (*operation)(rubik_t *, rubik_rotator_t, unsigned short), rubik_rotator_t rotator, unsigned short data) {
+  rubik_t operated = (*operation)(rubik, rotator, data);
+  rubik_copy(rubik, &operated);
+  rubik_free(&operated);
 }
 
 void rubik_free(rubik_t *rubik) {

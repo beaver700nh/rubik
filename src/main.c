@@ -48,22 +48,79 @@ void main_loop(void) {
     }
 
     if (ch == 'x') {
-      rubik_rotate_ip(&rubik, ROTATORS[CDL_DIR_X][0]);
+      rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_X][0], 0);
     }
     if (ch == 'X') {
-      rubik_rotate_ip(&rubik, ROTATORS[CDL_DIR_X][1]);
+      rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_X][1], 0);
     }
     if (ch == 'y') {
-      rubik_rotate_ip(&rubik, ROTATORS[CDL_DIR_Z][1]);
+      rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Z][1], 0);
     }
     if (ch == 'Y') {
-      rubik_rotate_ip(&rubik, ROTATORS[CDL_DIR_Z][0]);
+      rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Z][0], 0);
     }
     if (ch == 'z') {
-      rubik_rotate_ip(&rubik, ROTATORS[CDL_DIR_Y][1]);
+      rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Y][1], 0);
     }
     if (ch == 'Z') {
-      rubik_rotate_ip(&rubik, ROTATORS[CDL_DIR_Y][0]);
+      rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Y][0], 0);
+    }
+
+    if (ch == 'u') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], 0);
+    }
+    if (ch == 'U') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], 0);
+    }
+    if (ch == 'e') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], 1);
+    }
+    if (ch == 'E') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], 1);
+    }
+    if (ch == 'd') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], 2);
+    }
+    if (ch == 'D') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], 2);
+    }
+
+    if (ch == 'l') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], 0);
+    }
+    if (ch == 'L') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], 0);
+    }
+    if (ch == 'm') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], 1);
+    }
+    if (ch == 'M') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], 1);
+    }
+    if (ch == 'r') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], 2);
+    }
+    if (ch == 'R') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], 2);
+    }
+
+    if (ch == 'b') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], 0);
+    }
+    if (ch == 'B') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], 0);
+    }
+    if (ch == 's') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], 1);
+    }
+    if (ch == 'S') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], 1);
+    }
+    if (ch == 'f') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], 2);
+    }
+    if (ch == 'F') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], 2);
     }
   }
 

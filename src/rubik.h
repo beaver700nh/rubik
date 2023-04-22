@@ -23,8 +23,11 @@ vec3_t *rubik_get(rubik_t *rubik, vec3_t position);
 void rubik_draw(rubik_t *rubik, WINDOW *window);
 void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col);
 void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short position);
-rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator);
-void rubik_rotate_ip(rubik_t *rubik, rubik_rotator_t rotator);
+rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator, unsigned short _dummy);
+rubik_t rubik_rotated_slice_x(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
+rubik_t rubik_rotated_slice_y(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
+rubik_t rubik_rotated_slice_z(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
+void rubik_in_place(rubik_t *rubik, rubik_t (*operation)(rubik_t *, rubik_rotator_t, unsigned short), rubik_rotator_t rotator, unsigned short data);
 void rubik_free(rubik_t *rubik);
 
 #endif
