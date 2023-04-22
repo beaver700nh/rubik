@@ -9,11 +9,11 @@ typedef enum {
 
 typedef union {
   struct {
-    unsigned short x;
-    unsigned short y;
-    unsigned short z;
+    short x;
+    short y;
+    short z;
   };
-  unsigned short buf[3];
+  short buf[3];
 } vec3_t;
 
 unsigned short vec3_to_index(vec3_t *vec3, unsigned short size);

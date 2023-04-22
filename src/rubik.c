@@ -12,22 +12,21 @@ static short const RUBIK_COLORS[3][2] = {
   {COLOR_WHITE, COLOR_YELLOW},
 };
 
-unsigned short vec3_to_index(vec3_t *vec3, unsigned short size) {
-  unsigned short index = 0;
+void rubik_init(rubik_t *rubik, unsigned short size) {
+  rubik->size = size;
+  rubik->cubies = malloc(pow(size, RUBIK_DIMS) * sizeof (vec3_t));
 
-  for (unsigned short d = 0; d < RUBIK_DIMS; ++d) {
-    index += vec3->buf[d] * pow(size, RUBIK_DIMS - 1 - d);
+  for (unsigned short i = 0; i < size; ++i) {
+    for (unsigned short j = 0; j < size; ++j) {
+      for (unsigned short k = 0; k < size; ++k) {
+        vec3_t pos_vec = {.x = i, .y = j, .z = k};
+        rubik_init_cubie(rubik_get(rubik, pos_vec), size, pos_vec);
+      }
+    }
   }
-
-  return index;
 }
 
-void facie_init(facie_t *facie, short color, short sign) {
-  facie->color = color;
-  facie->sign = sign;
-}
-
-void cubie_init(cubie_t *cubie, unsigned short size, vec3_t pos) {
+void rubik_init_cubie(vec3_t *cubie, unsigned short size, vec3_t pos) {
   for (unsigned short d = 0; d < RUBIK_DIMS; ++d) {
     short color, sign;
 
@@ -44,25 +43,19 @@ void cubie_init(cubie_t *cubie, unsigned short size, vec3_t pos) {
       sign = 0;
     }
 
-    facie_init(&cubie->facies[d], color, sign);
+    cubie->buf[d] = sign * color;
   }
 }
 
-void rubik_init(rubik_t *rubik, unsigned short size) {
-  rubik->size = size;
-  rubik->cubies = malloc(size*size*size * sizeof (cubie_t));
-
-  for (unsigned short i = 0; i < size; ++i) {
-    for (unsigned short j = 0; j < size; ++j) {
-      for (unsigned short k = 0; k < size; ++k) {
-        vec3_t pos_vec = {.x = i, .y = j, .z = k};
-        cubie_init(rubik_get(rubik, pos_vec), size, pos_vec);
-      }
-    }
+void rubik_copy(rubik_t *rubik, rubik_t *other) {
+  if (rubik->size != other->size) {
+    return;
   }
+
+  memcpy(rubik->cubies, other->cubies, pow(rubik->size, 3) * sizeof (vec3_t));
 }
 
-cubie_t *rubik_get(rubik_t *rubik, vec3_t position) {
+vec3_t *rubik_get(rubik_t *rubik, vec3_t position) {
   return &rubik->cubies[vec3_to_index(&position, rubik->size)];
 }
 
@@ -73,7 +66,6 @@ void rubik_draw(rubik_t *rubik, WINDOW *window) {
 
   rubik_t rubik_x0z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][1]);
   rubik_draw_face_xy0(&rubik_x0z, window, 1, 5);
-  rubik_dump(&rubik_x0z, window, 100);
   rubik_free(&rubik_x0z);
 
   rubik_t rubik_0yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][1]);
@@ -98,8 +90,8 @@ void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, uns
   for (unsigned short i = 0; i < rubik->size; ++i) {
     for (unsigned short j = 0; j < rubik->size; ++j) {
       vec3_t pos_vec = {.x = i, .y = j, .z = 0};
-      cubie_t *cubie = rubik_get(rubik, pos_vec);
-      int color = COLOR_PAIR(cubie->facies[CDL_DIR_Z].color + 8);
+      vec3_t *cubie = rubik_get(rubik, pos_vec);
+      int color = COLOR_PAIR(abs(cubie->buf[CDL_DIR_Z]) + 8);
 
       wattron(window, color);
 
@@ -121,22 +113,24 @@ void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short position) {
     for (unsigned short j = 0; j < rubik->size; ++j) {
       for (unsigned short k = 0; k < rubik->size; ++k) {
         vec3_t pos_vec = {.x = i, .y = j, .z = k};
-        cubie_t *cubie = rubik_get(rubik, pos_vec);
+        vec3_t *cubie = rubik_get(rubik, pos_vec);
         unsigned short flat = vec3_to_index(&pos_vec, rubik->size);
 
         mvwaddstr(window, 3 + flat, 9 + position, "--");
 
         for (unsigned short d = 0; d < RUBIK_DIMS; ++d) {
-          facie_t *facie = &cubie->facies[d];
+          short facie = cubie->buf[d];
+          short color = abs(facie);
+          short sign = facie / color;
 
           mvwprintw(window, 3 + flat, 3 + 2*d + position, "%hd", pos_vec.buf[d]);
 
-          wattron(window, COLOR_PAIR(facie->color) | A_DIM * (facie->sign == 0));
+          wattron(window, COLOR_PAIR(color) | A_DIM * (sign == 0));
           mvwprintw(
             window, 3 + flat, 12 + 11*d + position,
-            "%c {%hd, %2d};", 'X' + d, facie->color, facie->sign
+            "%c {%hd, %2d};", 'X' + d, color, sign
           );
-          wattroff(window, COLOR_PAIR(facie->color) | A_DIM);
+          wattroff(window, COLOR_PAIR(color) | A_DIM);
         }
       }
     }
@@ -154,12 +148,19 @@ rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator) {
         unsigned short before = vec3_to_index(&before_vec, rubik->size);
         vec3_t after_vec = (*rotator)(before_vec, rubik->size);
         unsigned short after = vec3_to_index(&after_vec, rubik->size);
-        memcpy(&result.cubies[after], &rubik->cubies[before], sizeof (cubie_t));
+
+        result.cubies[after] = (*rotator)(rubik->cubies[before], 1);
       }
     }
   }
 
   return result;
+}
+
+void rubik_rotate_ip(rubik_t *rubik, rubik_rotator_t rotator) {
+  rubik_t rotated = rubik_rotated(rubik, rotator);
+  rubik_copy(rubik, &rotated);
+  rubik_free(&rotated);
 }
 
 void rubik_free(rubik_t *rubik) {

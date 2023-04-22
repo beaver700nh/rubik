@@ -1,4 +1,16 @@
+#include <math.h>
+
 #include "calc.h"
+
+unsigned short vec3_to_index(vec3_t *vec3, unsigned short size) {
+  unsigned short index = 0;
+
+  for (unsigned short d = 0; d < 3; ++d) {
+    index += vec3->buf[d] * pow(size, 2 - d);
+  }
+
+  return index;
+}
 
 vec3_t rotator_xp(vec3_t input, unsigned short size) {
   vec3_t output = {{input.x, size - 1 - input.z, input.y}};
