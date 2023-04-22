@@ -1,9 +1,17 @@
 #include <curses.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "rubik.h"
 
-int main(void) {
-  void main_loop(void);
+int main(int argc, char *argv[]) {
+  if (argc != 2) {
+    puts("Usage: rubik <size>");
+    return EXIT_FAILURE;
+  }
+
+  void main_loop(unsigned short size);
 
   initscr();
   noecho();
@@ -26,17 +34,19 @@ int main(void) {
     }
   }
 
-  main_loop();
+  main_loop(atoi(argv[1]));
 
   nocbreak();
   noecho();
   curs_set(1);
   endwin();
+
+  return EXIT_SUCCESS;
 }
 
-void main_loop(void) {
+void main_loop(unsigned short size) {
   rubik_t rubik;
-  rubik_init(&rubik, 3);
+  rubik_init(&rubik, size);
 
   for (;;) {
     rubik_draw(&rubik, stdscr);

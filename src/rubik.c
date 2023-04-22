@@ -63,27 +63,29 @@ vec3_t *rubik_get(rubik_t *rubik, vec3_t position) {
 }
 
 void rubik_draw(rubik_t *rubik, WINDOW *window) {
-  rubik_dump(rubik, window, 75);
+  unsigned short const unit = rubik->size + 1;
 
-  rubik_draw_face_xy0(rubik, window, 5, 5);
+  rubik_dump(rubik, window, (1 + 3*unit) * CUBIE_SIZE_X1);
+
+  rubik_draw_face_xy0(rubik, window, 1 + unit, 1 + unit);
 
   rubik_t rubik_x0z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][1], 0);
-  rubik_draw_face_xy0(&rubik_x0z, window, 1, 5);
+  rubik_draw_face_xy0(&rubik_x0z, window, 1, 1 + unit);
   rubik_free(&rubik_x0z);
 
   rubik_t rubik_0yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][1], 0);
-  rubik_draw_face_xy0(&rubik_0yz, window, 5, 1);
+  rubik_draw_face_xy0(&rubik_0yz, window, 1 + unit, 1);
   rubik_free(&rubik_0yz);
 
   rubik_t rubik_2yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][0], 0);
-  rubik_draw_face_xy0(&rubik_2yz, window, 5, 9);
+  rubik_draw_face_xy0(&rubik_2yz, window, 1 + unit, 1 + 2*unit);
   rubik_free(&rubik_2yz);
 
   rubik_t rubik_x2z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][0], 0);
-  rubik_draw_face_xy0(&rubik_x2z, window, 9, 5);
+  rubik_draw_face_xy0(&rubik_x2z, window, 1 + 2*unit, 1 + unit);
 
   rubik_t rubik_xy2 = rubik_rotated(&rubik_x2z, ROTATORS[CDL_DIR_X][0], 0);
-  rubik_draw_face_xy0(&rubik_xy2, window, 13, 5);
+  rubik_draw_face_xy0(&rubik_xy2, window, 1 + 3*unit, 1 + unit);
   rubik_free(&rubik_xy2);
 
   rubik_free(&rubik_x2z);
