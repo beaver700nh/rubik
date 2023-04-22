@@ -15,6 +15,7 @@ include_directories(${CURSES_INCLUDE_DIR})
 add_executable(
   ${PROJECT_NAME}
   src/main.c
+  src/rubik.c
   src/calc.c
 )
 

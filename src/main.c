@@ -1,6 +1,6 @@
 #include <curses.h>
 
-#include "calc.h"
+#include "rubik.h"
 
 int main(void) {
   void main_loop(void);
@@ -16,6 +16,7 @@ int main(void) {
 
     for (unsigned short i = 0; i < 8; ++i) {
       init_pair(i, i, -1);
+      init_pair(i + 8, i, i);
     }
   }
 
@@ -31,7 +32,7 @@ void main_loop(void) {
   rubik_t rubik;
   rubik_init(&rubik, 3);
 
-  rubik_draw(&rubik, stdscr, CDL_DIR_Z, CDL_DIR_Y);
+  rubik_draw(&rubik, stdscr);
 
   getch();
 
