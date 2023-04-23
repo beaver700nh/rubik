@@ -10,17 +10,21 @@ unsigned short CUBIE_SIZE_X1 = 6;
 unsigned short CUBIE_SIZE_Y0 = 2;
 unsigned short CUBIE_SIZE_Y1 = 3;
 
+unsigned short DIM_ENABLED = 1;
+
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    puts("Usage: rubik <size> [cubie_size_x0 cubie_size_x1 cubie_size_y0 cubie_size_y1]");
+  if (argc < 3) {
+    puts("Usage: rubik <dim_enabled> <size> [cubie_size_x0 cubie_size_x1 cubie_size_y0 cubie_size_y1]");
     return EXIT_FAILURE;
   }
 
-  if (argc >= 6) {
-    CUBIE_SIZE_X0 = atoi(argv[2]);
-    CUBIE_SIZE_X1 = atoi(argv[3]);
-    CUBIE_SIZE_Y0 = atoi(argv[4]);
-    CUBIE_SIZE_Y1 = atoi(argv[5]);
+  DIM_ENABLED = atoi(argv[1]);
+
+  if (argc >= 7) {
+    CUBIE_SIZE_X0 = atoi(argv[3]);
+    CUBIE_SIZE_X1 = atoi(argv[4]);
+    CUBIE_SIZE_Y0 = atoi(argv[5]);
+    CUBIE_SIZE_Y1 = atoi(argv[6]);
   }
 
   void main_loop(unsigned short size);
@@ -46,7 +50,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  main_loop(atoi(argv[1]));
+  main_loop(atoi(argv[2]));
 
   nocbreak();
   noecho();

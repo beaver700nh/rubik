@@ -14,7 +14,10 @@
     rubik_free(&temp);                                     \
   }
 
+#define A_DIM_CHECKED (DIM_ENABLED ? A_DIM : 0)
+
 extern unsigned short CUBIE_SIZE_X0, CUBIE_SIZE_X1, CUBIE_SIZE_Y0, CUBIE_SIZE_Y1;
+extern unsigned short DIM_ENABLED;
 
 typedef struct {
   vec3_t facies;

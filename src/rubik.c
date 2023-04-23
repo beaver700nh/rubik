@@ -96,7 +96,7 @@ void rubik_draw(rubik_t *rubik, WINDOW *window) {
 }
 
 void draw_box(WINDOW *window, unsigned short row, unsigned short col, unsigned short width, unsigned short height, char ch) {
-  wattron(window, (COLOR_WHITE + 8) | A_DIM);
+  wattron(window, (COLOR_WHITE + 8) | A_DIM_CHECKED);
 
   mvwhline(window, row,              col,             ch, width);
   mvwhline(window, row + height - 1, col,             ch, width);
@@ -105,7 +105,7 @@ void draw_box(WINDOW *window, unsigned short row, unsigned short col, unsigned s
   mvwvline(window, row,              col + width - 2, ch, height);
   mvwvline(window, row,              col + width - 1, ch, height);
 
-  wattroff(window, (COLOR_WHITE + 8) | A_DIM);
+  wattroff(window, (COLOR_WHITE + 8) | A_DIM_CHECKED);
 }
 
 void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col) {
@@ -155,15 +155,14 @@ void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned sho
         for (unsigned short d = 0; d < RUBIK_DIMS; ++d) {
           short facie = cubie->facies.buf[d];
           short color = abs(facie);
-          short sign = facie / color;
 
           unsigned short y = row + (flat % (int) pow(rubik->size, 2));
           unsigned short x = col + 3*d + 10*i;
-          char direction = sign == 0 ? ':' : RUBIK_FACES[d][(sign + 1) / 2];
+          char direction = facie < 0 ? RUBIK_FACES[d][0] : facie > 0 ? RUBIK_FACES[d][1] : ' ';
 
-          wattron(window, COLOR_PAIR(color) | A_DIM * (facie == 0));
+          wattron(window, COLOR_PAIR(color) | A_DIM_CHECKED * (facie == 0));
           mvwprintw(window, y, x, "%c%hd", direction, pos_vec.buf[d]);
-          wattroff(window, COLOR_PAIR(color) | A_DIM);
+          wattroff(window, COLOR_PAIR(color) | A_DIM_CHECKED);
         }
       }
     }
