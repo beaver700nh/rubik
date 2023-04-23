@@ -64,6 +64,7 @@ void main_loop(unsigned short size) {
 
   unsigned short move_axis = 0;
   unsigned short move_slice = 0;
+  unsigned short move_show = 1;
 
   unsigned short text_column = (4 + 3*size) * CUBIE_SIZE_X1 + 3;
 
@@ -74,14 +75,23 @@ void main_loop(unsigned short size) {
   mvaddstr(CUBIE_SIZE_Y1 + 4, text_column, "[Q] Quit");
 
   for (;;) {
-    rubik_copy(&visual, &rubik);
-    rubik_selection(&visual, move_axis, move_slice, 1);
-    rubik_draw(&visual, stdscr);
+    if (move_show) {
+      rubik_copy(&visual, &rubik);
+      rubik_selection(&visual, move_axis, move_slice, 1);
+      rubik_draw(&visual, stdscr);
+    }
+    else {
+      rubik_draw(&rubik, stdscr);
+    }
 
     int ch = getch();
 
     if (ch == 'q') {
       break;
+    }
+
+    else if (ch == '0') {
+      move_show = !move_show;
     }
 
     else if (ch == '1') {
