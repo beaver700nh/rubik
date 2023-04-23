@@ -7,25 +7,35 @@
 
 #define RUBIK_DIMS 3
 
+#define RUBIK_IN_PLACE(ptr_rubik, operation, ...)          \
+  {                                                        \
+    rubik_t temp = (operation)((ptr_rubik), __VA_ARGS__);  \
+    rubik_copy((ptr_rubik), &temp);                        \
+    rubik_free(&temp);                                     \
+  }
+
 extern unsigned short CUBIE_SIZE_X0, CUBIE_SIZE_X1, CUBIE_SIZE_Y0, CUBIE_SIZE_Y1;
 
 typedef struct {
+  vec3_t facies;
+  unsigned short selected;
+} cubie_t;
+
+typedef struct {
   unsigned short size;
-  vec3_t *cubies; // 3D array [x][y][z]
+  cubie_t *cubies; // 3D array [x][y][z]
 } rubik_t;
 
+void cubie_init(cubie_t *cubie, unsigned short size, vec3_t pos);
 void rubik_init(rubik_t *rubik, unsigned short size);
-void rubik_init_cubie(vec3_t *cubie, unsigned short size, vec3_t pos);
 void rubik_copy(rubik_t *rubik, rubik_t *other);
-vec3_t *rubik_get(rubik_t *rubik, vec3_t position);
+cubie_t *rubik_get(rubik_t *rubik, vec3_t position);
 void rubik_draw(rubik_t *rubik, WINDOW *window);
 void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col);
 void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col);
-rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator, unsigned short _dummy);
-rubik_t rubik_rotated_slice_x(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
-rubik_t rubik_rotated_slice_y(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
-rubik_t rubik_rotated_slice_z(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
-void rubik_in_place(rubik_t *rubik, rubik_t (*operation)(rubik_t *, rubik_rotator_t, unsigned short), rubik_rotator_t rotator, unsigned short data);
+rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator);
+rubik_t rubik_rotated_slice(rubik_t *rubik, rubik_rotator_t rotator, unsigned short axis, unsigned short slice);
+void rubik_selection(rubik_t *rubik, unsigned short axis, unsigned short slice, unsigned short value);
 void rubik_free(rubik_t *rubik);
 
 #endif
