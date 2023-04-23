@@ -6,10 +6,8 @@
 #include "calc.h"
 
 #define RUBIK_DIMS 3
-#define CUBIE_SIZE_X0 4
-#define CUBIE_SIZE_X1 6
-#define CUBIE_SIZE_Y0 2
-#define CUBIE_SIZE_Y1 3
+
+extern unsigned short CUBIE_SIZE_X0, CUBIE_SIZE_X1, CUBIE_SIZE_Y0, CUBIE_SIZE_Y1;
 
 typedef struct {
   unsigned short size;
@@ -22,7 +20,7 @@ void rubik_copy(rubik_t *rubik, rubik_t *other);
 vec3_t *rubik_get(rubik_t *rubik, vec3_t position);
 void rubik_draw(rubik_t *rubik, WINDOW *window);
 void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col);
-void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short position);
+void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col);
 rubik_t rubik_rotated(rubik_t *rubik, rubik_rotator_t rotator, unsigned short _dummy);
 rubik_t rubik_rotated_slice_x(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);
 rubik_t rubik_rotated_slice_y(rubik_t *rubik, rubik_rotator_t rotator, unsigned short slice);

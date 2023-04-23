@@ -5,10 +5,22 @@
 
 #include "rubik.h"
 
+unsigned short CUBIE_SIZE_X0 = 4;
+unsigned short CUBIE_SIZE_X1 = 6;
+unsigned short CUBIE_SIZE_Y0 = 2;
+unsigned short CUBIE_SIZE_Y1 = 3;
+
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    puts("Usage: rubik <size>");
+  if (argc < 2) {
+    puts("Usage: rubik <size> [cubie_size_x0 cubie_size_x1 cubie_size_y0 cubie_size_y1]");
     return EXIT_FAILURE;
+  }
+
+  if (argc >= 6) {
+    CUBIE_SIZE_X0 = atoi(argv[2]);
+    CUBIE_SIZE_X1 = atoi(argv[3]);
+    CUBIE_SIZE_Y0 = atoi(argv[4]);
+    CUBIE_SIZE_Y1 = atoi(argv[5]);
   }
 
   void main_loop(unsigned short size);
@@ -48,8 +60,26 @@ void main_loop(unsigned short size) {
   rubik_t rubik;
   rubik_init(&rubik, size);
 
+  unsigned short move_axis = 0;
+  unsigned short move_sign = 0;
+  unsigned short move_slice = 0;
+
+  unsigned short text_column = (1 + 3*size) * CUBIE_SIZE_X1 + 3;
+
+  mvaddstr(CUBIE_SIZE_Y1 + 0, text_column, "Press [F4] to rotate:");
+  mvaddstr(CUBIE_SIZE_Y1 + 1, text_column, "Slice                           axis");
+  mvaddstr(CUBIE_SIZE_Y1 + 2, text_column, "   [F3] [F2]                [F1]");
+
   for (;;) {
     rubik_draw(&rubik, stdscr);
+
+    attron(A_BOLD);
+    mvprintw(
+      CUBIE_SIZE_Y1 + 1, text_column + 6, "%d %s                  %c",
+      move_slice, move_sign == 0 ? "nega" : "posi", "XZY"[move_axis]
+    );
+    attroff(A_BOLD);
+    mvaddstr(CUBIE_SIZE_Y1 + 1, text_column + 12, "tively around the");
 
     int ch = getch();
 
@@ -57,80 +87,109 @@ void main_loop(unsigned short size) {
       break;
     }
 
-    if (ch == 'x') {
+    else if (ch == KEY_F(1)) {
+      move_axis = (move_axis + 1) % 3;
+    }
+    else if (ch == KEY_F(2)) {
+      move_sign = (move_sign + 1) % 2;
+    }
+    else if (ch == KEY_F(3)) {
+      move_slice = (move_slice + 1) % size;
+    }
+    else if (ch == KEY_F(4)) {
+      rubik_t (*operator)(rubik_t *, rubik_rotator_t, unsigned short);
+      unsigned short sign;
+
+      if (move_axis == 0) {
+        operator = &rubik_rotated_slice_x;
+        sign = move_sign;
+      }
+      else if (move_axis == 1) {
+        operator = &rubik_rotated_slice_y;
+        sign = move_sign;
+      }
+      else if (move_axis == 2) {
+        operator = &rubik_rotated_slice_z;
+        sign = !move_sign;
+      }
+
+      rubik_in_place(&rubik, operator, ROTATORS[move_axis][sign], move_slice);
+    }
+
+    else if (ch == 'x') {
       rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_X][0], 0);
     }
-    if (ch == 'X') {
+    else if (ch == 'X') {
       rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_X][1], 0);
     }
-    if (ch == 'y') {
+    else if (ch == 'y') {
       rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Z][1], 0);
     }
-    if (ch == 'Y') {
+    else if (ch == 'Y') {
       rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Z][0], 0);
     }
-    if (ch == 'z') {
+    else if (ch == 'z') {
       rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Y][1], 0);
     }
-    if (ch == 'Z') {
+    else if (ch == 'Z') {
       rubik_in_place(&rubik, &rubik_rotated, ROTATORS[CDL_DIR_Y][0], 0);
     }
 
-    if (ch == 'u') {
+    else if (ch == 'u') {
       rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], 0);
     }
-    if (ch == 'U') {
+    else if (ch == 'U') {
       rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], 0);
     }
-    if (ch == 'e') {
+    else if (ch == 'e') {
       rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], 1);
     }
-    if (ch == 'E') {
+    else if (ch == 'E') {
       rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], 1);
     }
-    if (ch == 'd') {
-      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], 2);
+    else if (ch == 'd') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][0], size - 1);
     }
-    if (ch == 'D') {
-      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], 2);
+    else if (ch == 'D') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_z, ROTATORS[CDL_DIR_Z][1], size - 1);
     }
 
-    if (ch == 'l') {
+    else if (ch == 'l') {
       rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], 0);
     }
-    if (ch == 'L') {
+    else if (ch == 'L') {
       rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], 0);
     }
-    if (ch == 'm') {
+    else if (ch == 'm') {
       rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], 1);
     }
-    if (ch == 'M') {
+    else if (ch == 'M') {
       rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], 1);
     }
-    if (ch == 'r') {
-      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], 2);
+    else if (ch == 'r') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][0], size - 1);
     }
-    if (ch == 'R') {
-      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], 2);
+    else if (ch == 'R') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_x, ROTATORS[CDL_DIR_X][1], size - 1);
     }
 
-    if (ch == 'b') {
+    else if (ch == 'b') {
       rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], 0);
     }
-    if (ch == 'B') {
+    else if (ch == 'B') {
       rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], 0);
     }
-    if (ch == 's') {
+    else if (ch == 's') {
       rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], 1);
     }
-    if (ch == 'S') {
+    else if (ch == 'S') {
       rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], 1);
     }
-    if (ch == 'f') {
-      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], 2);
+    else if (ch == 'f') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][1], size - 1);
     }
-    if (ch == 'F') {
-      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], 2);
+    else if (ch == 'F') {
+      rubik_in_place(&rubik, &rubik_rotated_slice_y, ROTATORS[CDL_DIR_Y][0], size - 1);
     }
   }
 

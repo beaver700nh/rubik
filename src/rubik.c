@@ -12,6 +12,12 @@ static short const RUBIK_COLORS[3][2] = {
   {COLOR_WHITE, COLOR_YELLOW},
 };
 
+static char const RUBIK_FACES[3][2] = {
+  {'L', 'R'},
+  {'B', 'F'},
+  {'U', 'D'},
+};
+
 void rubik_init(rubik_t *rubik, unsigned short size) {
   rubik->size = size;
   rubik->cubies = malloc(pow(size, RUBIK_DIMS) * sizeof (vec3_t));
@@ -63,29 +69,27 @@ vec3_t *rubik_get(rubik_t *rubik, vec3_t position) {
 }
 
 void rubik_draw(rubik_t *rubik, WINDOW *window) {
-  unsigned short const unit = rubik->size + 1;
+  rubik_dump(rubik, window, CUBIE_SIZE_Y1 + 5, (1 + 3*rubik->size) * CUBIE_SIZE_X1 + 3);
 
-  rubik_dump(rubik, window, (1 + 3*unit) * CUBIE_SIZE_X1);
-
-  rubik_draw_face_xy0(rubik, window, 1 + unit, 1 + unit);
+  rubik_draw_face_xy0(rubik, window, 1 + rubik->size, 1 + rubik->size);
 
   rubik_t rubik_x0z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][1], 0);
-  rubik_draw_face_xy0(&rubik_x0z, window, 1, 1 + unit);
+  rubik_draw_face_xy0(&rubik_x0z, window, 1, 1 + rubik->size);
   rubik_free(&rubik_x0z);
 
   rubik_t rubik_0yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][1], 0);
-  rubik_draw_face_xy0(&rubik_0yz, window, 1 + unit, 1);
+  rubik_draw_face_xy0(&rubik_0yz, window, 1 + rubik->size, 1);
   rubik_free(&rubik_0yz);
 
   rubik_t rubik_2yz = rubik_rotated(rubik, ROTATORS[CDL_DIR_Y][0], 0);
-  rubik_draw_face_xy0(&rubik_2yz, window, 1 + unit, 1 + 2*unit);
+  rubik_draw_face_xy0(&rubik_2yz, window, 1 + rubik->size, 1 + 2*rubik->size);
   rubik_free(&rubik_2yz);
 
   rubik_t rubik_x2z = rubik_rotated(rubik, ROTATORS[CDL_DIR_X][0], 0);
-  rubik_draw_face_xy0(&rubik_x2z, window, 1 + 2*unit, 1 + unit);
+  rubik_draw_face_xy0(&rubik_x2z, window, 1 + 2*rubik->size, 1 + rubik->size);
 
   rubik_t rubik_xy2 = rubik_rotated(&rubik_x2z, ROTATORS[CDL_DIR_X][0], 0);
-  rubik_draw_face_xy0(&rubik_xy2, window, 1 + 3*unit, 1 + unit);
+  rubik_draw_face_xy0(&rubik_xy2, window, 1 + 3*rubik->size, 1 + rubik->size);
   rubik_free(&rubik_xy2);
 
   rubik_free(&rubik_x2z);
@@ -111,9 +115,7 @@ void rubik_draw_face_xy0(rubik_t *rubik, WINDOW *window, unsigned short row, uns
   }
 }
 
-void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short position) {
-  mvwprintw(window, 1, 2 + position, "Cube size: %hd", rubik->size);
-
+void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short row, unsigned short col) {
   for (unsigned short i = 0; i < rubik->size; ++i) {
     for (unsigned short j = 0; j < rubik->size; ++j) {
       for (unsigned short k = 0; k < rubik->size; ++k) {
@@ -121,20 +123,17 @@ void rubik_dump(rubik_t *rubik, WINDOW *window, unsigned short position) {
         vec3_t *cubie = rubik_get(rubik, pos_vec);
         unsigned short flat = vec3_to_index(&pos_vec, rubik->size);
 
-        mvwaddstr(window, 3 + flat, 9 + position, "--");
-
         for (unsigned short d = 0; d < RUBIK_DIMS; ++d) {
           short facie = cubie->buf[d];
           short color = abs(facie);
           short sign = facie / color;
 
-          mvwprintw(window, 3 + flat, 3 + 2*d + position, "%hd", pos_vec.buf[d]);
+          unsigned short y = row + (flat % (int) pow(rubik->size, 2));
+          unsigned short x = col + 3*d + 10*i;
+          char direction = sign == 0 ? ':' : RUBIK_FACES[d][(sign + 1) / 2];
 
-          wattron(window, COLOR_PAIR(color) | A_DIM * (sign == 0));
-          mvwprintw(
-            window, 3 + flat, 12 + 11*d + position,
-            "%c {%hd, %2d};", 'X' + d, color, sign
-          );
+          wattron(window, COLOR_PAIR(color) | A_DIM * (facie == 0));
+          mvwprintw(window, y, x, "%c%hd", direction, pos_vec.buf[d]);
           wattroff(window, COLOR_PAIR(color) | A_DIM);
         }
       }
