@@ -21,7 +21,7 @@ build:
 	(mkdir -p build; cd build; cmake ..; make -j4)
 
 run:
-	./build/bin/$(PROJECT)
+	./build/bin/$(PROJECT) 3
 
 finddws:
 	grep -En '\s+$$' src/*
